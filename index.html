@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Snake</title>
+	<link rel="stylesheet" href="style.css">
+	<script src="https://code.jquery.com/jquery.js"></script>
+</head>
+<body>
+<div id="gameBoard"></div>
+<script type="text/javascript">
+	for(var i=35; i>0; i--){
+		for(var j=1; j<51; j++){
+			$("#gameBoard").append("<div class='block' id='"+j+"x"+i+"' x='"+j+"' y='"+i+"'></div>");
+		};
+	};
+	$("#25x25").addClass("head");
+	var dir = "down";
+	var picDir = "up-down"; 
+	var wormLeng = 300;
+	var turning = false;
+	$(window).keydown(function(e) {   
+        switch (e.keyCode) {
+            case 37: if(dir != "right" && dir != "left" && turning==false) {
+            	if(dir == "up") picDir = "up-left";
+            	if(dir == "down") picDir = "down-left";
+            	dir = "left";
+            	turning = true;
+            	};
+                return;
+            case 38: if(dir != "down" && dir != "up" && turning==false){
+            	if(dir == "right") picDir = "right-up";
+            	if(dir == "left") picDir = "left-up";
+            	dir = "up";
+            	turning = true;
+           		};
+                 e.preventDefault();
+                return;
+            case 39: if(dir != "left" && dir != "right" && turning==false){
+            	if(dir == "up") picDir = "up-right";
+            	if(dir == "down") picDir = "down-right";
+            	dir = "right";
+            	turning = true;
+           		}
+                return;
+            case 40: if(dir != "up" && dir != "down" && turning==false){
+            	if(dir == "right") picDir = "right-down";
+            	if(dir == "left") picDir = "left-down";
+            	dir = "down";
+            	turning = true;
+            	}
+                 e.preventDefault();
+               return;
+        };
+    });
+    function makeApple(){
+    	var x2 = Math.floor((Math.random()*50)+1);
+    	var y2 = Math.floor((Math.random()*35)+1);
+    	if($("#"+x2+"x"+y2).hasClass("body") || $("#"+x2+"x"+y2).hasClass("head")){
+    		makeApple();
+    	} else {
+    		$("#"+x2+"x"+y2).addClass("apple");
+    	};
+    };
+    makeApple();
+    move = setInterval(function(){
+    	var x = parseInt($(".head").attr("x"));
+    	var y = parseInt($(".head").attr("y"));
+    	$(".head").addClass("body");
+    	var currentDir = dir; 
+    	setTimeout(function(){
+    		$("#"+x+"x"+y).attr("style", "background-image: url(images/tail-"+currentDir+".jpg)");
+    	}, (wormLeng-100));
+    	setTimeout(function(){
+    		$("#"+x+"x"+y).removeClass("body");
+    		$("#"+x+"x"+y).attr("style", "")
+    	}, wormLeng);
+    	$(".head").attr("style", "")
+    	$(".head").removeClass("head");
+    	var gotApp = false;
+    	var lostGame = false;
+    	if(dir == "down"){
+    		$("#"+x+"x"+(y-1)).attr("style", "background-image: url(images/snake-down.jpg)");
+    		$("#"+x+"x"+(y-1)).addClass("head");
+    		if($("#"+x+"x"+(y-1)).hasClass('apple')) gotApp = true;
+    		if($("#"+x+"x"+(y-1)).hasClass('body') || y-1 == 0) lostGame = true;
+    		if(turning){
+    			$("#"+x+"x"+y).attr("style", "background-image: url(images/"+picDir+".jpg)");
+    		} else {
+    			$("#"+x+"x"+y).attr("style", "background-image: url(images/up-down.jpg)");
+    		}
+    	} else if (dir == "up"){
+    		$("#"+x+"x"+(y+1)).addClass("head");
+    		$("#"+x+"x"+(y+1)).attr("style", "background-image: url(images/snake-up.jpg)");
+    		if($("#"+x+"x"+(y+1)).hasClass('apple')) gotApp = true;
+    		if($("#"+x+"x"+(y+1)).hasClass('body') || y+1 == 36) lostGame = true;
+    		if(turning){
+    			$("#"+x+"x"+y).attr("style", "background-image: url(images/"+picDir+".jpg)");
+    		} else {
+    			$("#"+x+"x"+y).attr("style", "background-image: url(images/down-up.jpg)");
+    		}
+    	} else if (dir == "right"){
+    		$("#"+(x+1)+"x"+y).addClass("head");
+    		$("#"+(x+1)+"x"+y).attr("style", "background-image: url(images/snake-right.jpg)");
+    		if($("#"+(x+1)+"x"+y).hasClass('apple')) gotApp = true;
+    		if($("#"+(x+1)+"x"+y).hasClass('body') || x+1 == 51) lostGame = true;
+    		if(turning){
+    			$("#"+x+"x"+y).attr("style", "background-image: url(images/"+picDir+".jpg)");
+    		} else {
+    			$("#"+x+"x"+y).attr("style", "background-image: url(images/left-right.jpg)");
+    		}
+    	} else if (dir == "left"){
+    		$("#"+(x-1)+"x"+y).addClass("head");
+    		$("#"+(x-1)+"x"+y).attr("style", "background-image: url(images/snake-left.jpg)");
+    		if($("#"+(x-1)+"x"+y).hasClass('apple')) gotApp = true;
+    		if($("#"+(x-1)+"x"+y).hasClass('body') || x-1 == 0) lostGame = true;
+    		if(turning){
+    			$("#"+x+"x"+y).attr("style", "background-image: url(images/"+picDir+".jpg)");
+    		} else {
+    			$("#"+x+"x"+y).attr("style", "background-image: url(images/right-left.jpg)");
+    		}
+    	};
+    	if(gotApp){
+    		$(".apple").removeClass("apple")
+    		wormLeng+=100;
+    		makeApple();
+    	};
+    	if(lostGame){
+    		$("body").html("<h1>YOU LOSE!</h1>")
+    	};
+    	turning=false;
+    }, 100);
+
+</script>
+</body>
+</html>

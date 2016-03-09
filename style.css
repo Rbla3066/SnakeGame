@@ -1,0 +1,16 @@
+.block {
+	width: 15px;
+	height: 15px;
+	float: left;
+}
+#gameBoard {
+	width: 750px;
+	height: 525px;
+}
+.apple{
+	background-image: url(images/apple.jpg);
+}
+#gameBoard{
+	border-style: solid;
+	border-width: 5px;
+}
