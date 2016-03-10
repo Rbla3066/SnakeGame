@@ -21,7 +21,7 @@
 	$("#15x25").addClass("head");
 	var dir = "down";
 	var picDir = "up-down"; 
-	var wormLeng = 300;
+	var wormLeng = 100;
 	var turning = false;
 	$(window).keydown(function(e) {   
         switch (e.keyCode) {
@@ -141,10 +141,12 @@
     	}, 100);
     };
     $("body").on("click", "#start", function(){
+    	$("#score").html("1")
     	$(".head").removeClass('head');
     	$(".body").removeClass('body');
     	dir = "down";
-    	wormLeng = 300;
+    	turning = false;
+    	wormLeng = 100;
     	$("#15x25").addClass("head");
     	startGame();
     	$("#info").empty();

@@ -9,7 +9,7 @@ html, body{
 }
 #gameBoard {
 	position: relative;
-	transform: scale(1.3);
+	transform: scale(1.5);
 	width: 525px;
 	height: 375px;
 	margin: auto;
@@ -21,6 +21,7 @@ html, body{
 }
 #gameBoard{
 	border-style: solid;
+	overflow: hidden;
 	border-width: 5px;
 }
 #start {
