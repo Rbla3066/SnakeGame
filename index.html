@@ -4,10 +4,20 @@
 	<title>Snake</title>
 	<link rel="stylesheet" href="style.css">
 	<script src="https://code.jquery.com/jquery.js"></script>
+	<script src="https://cdn.firebase.com/js/client/2.4.1/firebase.js"></script>
 </head>
 <body>
-<div id="info"><button id='start'>Start</button></div>
+<div id="difficulty">
+	<button class ="dif-button" data-level="200">Easy</button>
+	<button class ="dif-button" data-level="100">Medium</button>
+	<button class ="dif-button" data-level="50">Hard</button>
+	<button class ="dif-button" data-level="25">Rediculous</button>
+	<button id="no">Stationary Apple</button>
+	<button id="yes">Mobile Apple</button>
+</div>
 <div id="gameBoard"></div>
+<div id="highScores"></div>
+<div id="info"><button id='start'>Start</button></div>
 <div id="level">
 	<span>Level: </span>
 	<span id="score">0</span>
@@ -18,10 +28,32 @@
 			$("#gameBoard").append("<div class='block' id='"+j+"x"+i+"' x='"+j+"' y='"+i+"'></div>");
 		};
 	};
+	var hiScores;
+	function HighScore(name, score){
+		this.name = name;
+		this.score = score;
+	}
+	var rob = new HighScore("rob", "56");
+	console.log(rob.name, rob.score);
+	var fireData = new Firebase("https://rblasnake.firebaseio.com/");
+	fireData.on("value", function(snapshot){
+		$("#highScores").html("<div>Highscores</div>");
+		hiScores = snapshot.val().Highscores;
+		for(var i=0; i<snapshot.val().Highscores.length && i<11; i++){
+			$("#highScores").append("<div>"+snapshot.val().Highscores[i].name+": "+snapshot.val().Highscores[i].score+"</div>");
+		};
+	}, function (errorObject) {
+  		console.log("The read failed: " + errorObject.code);
+	});
+	var level = 100;
+	$(".dif-button").click(function(){
+		level = parseInt($(this).data("level"));
+	})
 	$("#15x25").addClass("head");
+	var movingApple = false;
 	var dir = "down";
 	var picDir = "up-down"; 
-	var wormLeng = 100;
+	var wormLeng = level;
 	var turning = false;
 	$(window).keydown(function(e) {   
         switch (e.keyCode) {
@@ -69,6 +101,81 @@
     		$("#"+x2+"x"+y2).addClass("apple");
     	};
     };
+    function moveRat(){
+    	ratMove = setInterval(function(){
+    		var dirArr = [];
+    		var ratDir = "";
+    		var ratx =  parseInt($(".apple").attr("x"));
+    		var raty =  parseInt($(".apple").attr("y"));
+    		var headx = parseInt($(".head").attr("x"));
+    		var heady = parseInt($(".head").attr("y"));
+    		var xdif = Math.abs(ratx - headx);
+    		var ydif = Math.abs(raty - heady);
+    		if(xdif < ydif){
+    			if(heady > raty){
+					ratDir = "down";
+				} else {
+    				ratDir = "up";
+    			};
+    		} else {
+    			if(headx < ratx) {
+    				ratDir = "right";
+    			} else {
+    				ratDir = "left";
+    			};
+    		};
+    		if($("#"+ratx+"x"+(raty+1)).hasClass('body') && $("#"+ratx+"x"+(raty-1)).hasClass('body') && $("#"+(ratx+1)+"x"+raty).hasClass('body') && $("#"+(ratx-1)+"x"+raty).hasClass('body')) ratDir = "";
+    		if(ratDir == "up"){
+    			if($("#"+ratx+"x"+(raty+1)).hasClass('body') || raty+1 == 26){
+    				if(headx < ratx){
+    					ratDir = "right";
+    				} else {
+    					ratDir = "left";
+    				};
+    			};
+    		};
+    		if(ratDir == "down"){
+    			if($("#"+ratx+"x"+(raty-1)).hasClass('body') || raty-1 == 0){
+    				if(headx < ratx){
+    					ratDir = "right";
+    				} else {
+    					ratDir = "left";
+    				};
+    			};
+    		};
+    		if(ratDir == "right"){
+    			if($("#"+(ratx+1)+"x"+raty).hasClass('body') || ratx+1 == 36){
+    				if(heady > raty){
+    					ratDir = "down";
+    				} else {
+    					ratDir = "up";
+    				};
+    			};
+    		};
+    		if(ratDir == "left"){
+    			if($("#"+(ratx-1)+"x"+raty).hasClass('body') || ratx-1 == 0){
+    				if(heady > raty){
+    					ratDir = "down";
+    				} else {
+    					ratDir = "up";
+    				};
+    			};
+    		};
+    		if(ratDir == "up" && raty+1 != 26){
+    			$("#"+ratx+"x"+raty).removeClass("apple");
+    			$("#"+ratx+"x"+(raty+1)).addClass("apple");
+    		} else if(ratDir == "down" && raty-1 != 0){
+    			$("#"+ratx+"x"+raty).removeClass("apple");
+    			$("#"+ratx+"x"+(raty-1)).addClass("apple");
+    		} else if(ratDir == "right" && ratx+1 != 36){
+    			$("#"+ratx+"x"+raty).removeClass("apple");
+    			$("#"+(ratx+1)+"x"+raty).addClass("apple");
+    		} else if(ratDir == "left" && ratx-1 != 0){
+    			$("#"+ratx+"x"+raty).removeClass("apple");
+    			$("#"+(ratx-1)+"x"+raty).addClass("apple");
+    		} else {};
+    	}, (level*2));
+    };
     makeApple();
     function startGame(){
     	move = setInterval(function(){
@@ -80,7 +187,7 @@
     		var currentDir = dir; 
     		setTimeout(function(){
     			$("#"+x+"x"+y).attr("style", "background-image: url(images/tail-"+currentDir+".jpg)");
-    		}, (wormLeng-100));
+    		}, (wormLeng-level));
     		setTimeout(function(){
     			$("#"+x+"x"+y).removeClass("body");
     			$("#"+x+"x"+y).attr("style", "")
@@ -130,25 +237,47 @@
     		};
     		if(gotApp){
     			$(".apple").removeClass("apple")
-    			wormLeng+=100;
+    			wormLeng+=level;
     			makeApple();
     		};
     		if(lostGame){
-    			clearInterval(move)
-    			$("#info").html("<h1>YOU LOSE!!</h1><button id='start'>Start</button>");
+    			var curLevel = parseInt($("#score").html());
+    			var betterScore = false;
+    			for(var j=0; j<hiScores.length; j++){
+    				if(curLevel > parseInt(hiScores[j].score)) betterScore = true;
+    			};
+    			if(betterScore){
+    				var newName = prompt("Enter your name");
+    				var newHighScore = new HighScore(newName, curLevel);
+    				hiScores.push(newHighScore);
+    				fireData.set({Highscores: hiScores});
+    			};
+    			loseGame();
     		};
     		turning=false;
-    	}, 100);
+    	}, level);
     };
+    function loseGame(){
+    	clearInterval(move);
+    	if(movingApple) clearInterval(ratMove);
+    	$("#info").html("<h1>YOU LOSE!!</h1><button id='start'>Start</button>");
+    };
+    $("#no").click(function(){
+    	movingApple = false;
+    });
+    $("#yes").click(function(){
+    	movingApple = true;
+    });
     $("body").on("click", "#start", function(){
     	$("#score").html("1")
     	$(".head").removeClass('head');
     	$(".body").removeClass('body');
     	dir = "down";
     	turning = false;
-    	wormLeng = 100;
+    	wormLeng = level;
     	$("#15x25").addClass("head");
     	startGame();
+    	if (movingApple) moveRat();
     	$("#info").empty();
     });
 
